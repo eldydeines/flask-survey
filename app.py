@@ -1,5 +1,9 @@
 
-
+"""
+Eldy Deines - Survey Exercise
+Used Survey Classes to help build a survey that uses jinga templates
+and flask to run through survey questions and store answers.
+"""
 from flask.helpers import url_for
 from surveys import * #imports surveys and questions
 from flask import Flask, request, render_template, redirect, flash #imports flask object, request, and jinga
@@ -20,12 +24,14 @@ count = 0
 #start button will direct users to /questions/0
 @app.route('/')
 def home_page():
+    """show active survey """
     survey_title = satisfaction_survey.title
     survey_instructions = satisfaction_survey.instructions
     return render_template("index.html", title = survey_title, instructions = survey_instructions)
 
 
-#Handles questions
+#Shows individual questions to survey taker
+#If survey taker tries to go out of order, they are redirected to the question needing answered
 @app.route('/questions/<int:question_number>')
 def show_question(question_number):
     global count
@@ -37,7 +43,8 @@ def show_question(question_number):
         question_choices = satisfaction_survey.questions[question_number].choices
         return render_template("questions.html", question = question_to_display, choices = question_choices)
     
-
+#Uses post method to collect and post answer to response list
+#Will update page by seeing where they are in the question count
 @app.route('/answer', methods=["POST"])
 def get_answer():
     answer = request.form["chosen"]
