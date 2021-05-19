@@ -6,17 +6,17 @@ and flask to run through survey questions and store answers.
 """
 from flask.helpers import url_for
 from surveys import * #imports surveys and questions
-from flask import Flask, request, render_template, redirect, flash #imports flask object, request, and jinga
+from flask import Flask, request, session, render_template, redirect, flash #imports flask object, request, and jinga
 from flask_debugtoolbar import DebugToolbarExtension #helps with debugging with html templates
 
 #creates new app and you must provide key right after
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "CBsecret"
+app.config['SECRET_KEY'] = "COsecret"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 debug = DebugToolbarExtension(app)
 
 #initialize user's survey responses
-responses = []
+resp = []
 number_of_questions = len(satisfaction_survey.questions)
 count = 0
 
@@ -28,6 +28,12 @@ def home_page():
     survey_title = satisfaction_survey.title
     survey_instructions = satisfaction_survey.instructions
     return render_template("index.html", title = survey_title, instructions = survey_instructions)
+
+@app.route('/session/', methods=["POST"])
+def set_session():
+    """Set Session Variables"""
+    session['responses'] = []
+    return redirect(f"/questions/{count}")
 
 
 #Shows individual questions to survey taker
@@ -47,10 +53,13 @@ def show_question(question_number):
 #Will update page by seeing where they are in the question count
 @app.route('/answer', methods=["POST"])
 def get_answer():
-    answer = request.form["chosen"]
-    responses.append(answer)
-    
     global count
+
+    answer = request.form["chosen"]
+    resp.append(answer)
+    session['responses'] = resp
+    print(session['responses'])
+        
     count = 1 + count;
     if count < len(satisfaction_survey.questions):
         return redirect(f"/questions/{count}")
